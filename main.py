@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox, scrolledtext, Toplevel, Label, Entry, Button, Tk
+from tkinter import filedialog, messagebox, scrolledtext, Toplevel, Label, Entry, Button, Tk, ttk, scrolledtext, Frame
 from threading import Thread
 from bulk_rename import bulk_rename
 from backup_files import backup_files
@@ -26,31 +26,39 @@ def open_rename_window():
         if not folder_path or not old_name_part or not new_name_part:
             messagebox.showwarning("Input Error", "All fields are required!")
         else:
-            bulk_rename(folder_path, old_name_part, new_name_part)
-
-    rename_window = tk.Toplevel(root)
-    rename_window.title("Bulk Rename Files")
-    rename_window.geometry("400x300")
-
-    tk.Label(rename_window, text="Folder Path:").pack(pady=5)
-    folder_entry = tk.Entry(rename_window, width=40)
-    folder_entry.pack(pady=5)
+            bulk_rename(folder_path, old_name_part, new_name_part, progress_bar, rename_window)
+            status_label.config(text="Renaming completed!")
 
     def browse_folder():
         folder_selected = filedialog.askdirectory()
+        folder_entry.delete(0, tk.END)
         folder_entry.insert(0, folder_selected)
 
-    tk.Button(rename_window, text="Browse", command=browse_folder).pack(pady=5)
+    rename_window = tk.Toplevel(root)
+    rename_window.title("Bulk Rename Files")
+    rename_window.geometry("450x250")
 
-    tk.Label(rename_window, text="Part to Replace:").pack(pady=5)
-    old_name_entry = tk.Entry(rename_window, width=40)
-    old_name_entry.pack(pady=5)
+    ttk.Label(rename_window, text="Folder Path:").grid(row=0, column=0, padx=10, pady=5, sticky="e")
+    folder_entry = ttk.Entry(rename_window, width=40)
+    folder_entry.grid(row=0, column=1, padx=10, pady=5)
+    ttk.Button(rename_window, text="Browse", command=browse_folder).grid(row=0, column=2, padx=10, pady=5)
 
-    tk.Label(rename_window, text="Replace With:").pack(pady=5)
-    new_name_entry = tk.Entry(rename_window, width=40)
-    new_name_entry.pack(pady=5)
+    ttk.Label(rename_window, text="Old Name Part:").grid(row=1, column=0, padx=10, pady=5, sticky="e")
+    old_name_entry = ttk.Entry(rename_window, width=40)
+    old_name_entry.grid(row=1, column=1, padx=10, pady=5)
 
-    tk.Button(rename_window, text="Rename Files", command=execute_rename).pack(pady=20)
+    ttk.Label(rename_window, text="New Name Part:").grid(row=2, column=0, padx=10, pady=5, sticky="e")
+    new_name_entry = ttk.Entry(rename_window, width=40)
+    new_name_entry.grid(row=2, column=1, padx=10, pady=5)
+
+    ttk.Button(rename_window, text="Rename Files", command=execute_rename).grid(row=3, column=1, padx=10, pady=20)
+    ttk.Button(rename_window, text="Cancel", command=rename_window.destroy).grid(row=3, column=2, padx=10, pady=20)
+
+    progress_bar = ttk.Progressbar(rename_window, orient="horizontal", length=400, mode="determinate")
+    progress_bar.grid(row=4, column=0, columnspan=3, padx=10, pady=10)
+
+    status_label = ttk.Label(rename_window, text="")
+    status_label.grid(row=5, column=0, columnspan=3, padx=10, pady=5)
 
 
 # Function to handle the backup task
@@ -180,22 +188,15 @@ def open_email_window():
 
 # Open scheduler window
 def open_scheduler_window():
-    def schedule_task():
-        global task_mapping
-        task_name = task_selection.get()
-        schedule_time = time_entry.get()
-        if not task_name or not schedule_time:
-            messagebox.showwarning("Input Error", "All fields are required!")
-            return
-        
-        # Map task names to functions
-        task_mapping = {
-            "Bulk Rename Files": open_rename_window,
-            "Backup Files": open_backup_window,
-            "Download Files": open_download_window,
-            "Automate Email Reports": open_email_window,
-            "Task Scheduler": open_scheduler_window,
-            "Web Scraping1": open_scraping_window1,
+    global task_mapping
+    # Map task names to functions
+    task_mapping = {
+        "Bulk Rename Files": open_rename_window,
+        "Backup Files": open_backup_window,
+        "Download Files": open_download_window,
+        "Automate Email Reports": open_email_window,
+        "Task Scheduler": open_scheduler_window,
+        "Web Scraping1": open_scraping_window1,
             "Web Scraping2": open_scraping_window2,
             "Automate Social Media Posts": open_social_media_window,
             "Automate Invoice Generation": open_invoice_window,
@@ -204,6 +205,15 @@ def open_scheduler_window():
             "File Cleanup": open_file_cleanup_window,
             "Password Generator": open_password_generator_window
         }
+    def schedule_task():
+        global task_mapping
+        task_name = task_selection.get()
+        schedule_time = time_entry.get()
+        if not task_name or not schedule_time:
+            messagebox.showwarning("Input Error", "All fields are required!")
+            return
+        
+        
         
         
         task_function = task_mapping.get(task_name)
@@ -557,27 +567,45 @@ def open_task_tracker_window():
     log_text.pack(pady=5)
 
 # Main GUI
-root = Tk()
+root = tk.Tk()
 root.title("Automation Tasks")
-root.geometry("300x700")
+root.geometry("400x800")
+root.configure(bg="#f0f0f0")
 
-Label(root, text="Select a Task", font=("Arial", 14)).pack(pady=20)
+ttk.Label(root, text="Select a Task", font=("Arial", 16, "bold"), background="#f0f0f0").pack(pady=20)
+
+# Create frames for better organization with different background colors
+frame1 = ttk.Frame(root, style="Frame1.TFrame")
+frame1.pack(pady=10, fill='x')
+frame2 = ttk.Frame(root, style="Frame2.TFrame")
+frame2.pack(pady=10, fill='x')
+frame3 = ttk.Frame(root, style="Frame3.TFrame")
+frame3.pack(pady=10, fill='x')
+
+# Define styles
+style = ttk.Style()
+style.configure("Frame1.TFrame", background="#e0f7fa")
+style.configure("Frame2.TFrame", background="#ffe0b2")
+style.configure("Frame3.TFrame", background="#dcedc8")
+style.configure("TButton", padding=6, relief="flat", background="#ccc")
 
 # Buttons for tasks
-Button(root, text="Bulk Rename Files", command=open_rename_window, width=25).pack(pady=10)
-Button(root, text="Backup Files", command=open_backup_window, width=25).pack(pady=10)
-Button(root, text="Download Files", command=open_download_window, width=25).pack(pady=10)
-Button(root, text="Automate Email Reports", command=open_email_window, width=25).pack(pady=10)
-Button(root, text="Task Scheduler", command=open_scheduler_window, width=25).pack(pady=10)
-Button(root, text="Web Scraping1", command=open_scraping_window1, width=25).pack(pady=10)
-Button(root, text="Web Scraping2", command=open_scraping_window2, width=25).pack(pady=10)
-Button(root, text="Automate Social Media Posts", command=open_social_media_window, width=25).pack(pady=10)
-Button(root, text="Automate Invoice Generation", command=open_invoice_window, width=25).pack(pady=10)
-Button(root, text="Monitor Website Uptime", command=open_uptime_monitor_window, width=25).pack(pady=10)
-Button(root, text="Automate Email Replies", command=open_auto_reply_window, width=25).pack(pady=10)
-Button(root, text="File Cleanup", command=open_file_cleanup_window, width=25).pack(pady=10)
-Button(root, text="Password Generator", command=open_password_generator_window, width=25).pack(pady=10)
-Button(root, text="Task Tracker / Reminder", command=open_task_tracker_window, width=25).pack(pady=10)
+ttk.Button(frame1, text="Bulk Rename Files", command=open_rename_window).pack(pady=5)
+ttk.Button(frame1, text="Backup Files", command=open_backup_window).pack(pady=5)
+ttk.Button(frame1, text="Download Files", command=open_download_window).pack(pady=5)
+ttk.Button(frame1, text="Automate Email Reports", command=open_email_window).pack(pady=5)
+
+ttk.Button(frame2, text="Task Scheduler", command=open_scheduler_window).pack(pady=5)
+ttk.Button(frame2, text="Web Scraping1", command=open_scraping_window1).pack(pady=5)
+ttk.Button(frame2, text="Web Scraping2", command=open_scraping_window2).pack(pady=5)
+ttk.Button(frame2, text="Automate Social Media Posts", command=open_social_media_window).pack(pady=5)
+
+ttk.Button(frame3, text="Automate Invoice Generation", command=open_invoice_window).pack(pady=5)
+ttk.Button(frame3, text="Monitor Website Uptime", command=open_uptime_monitor_window).pack(pady=5)
+ttk.Button(frame3, text="Automate Email Replies", command=open_auto_reply_window).pack(pady=5)
+ttk.Button(frame3, text="File Cleanup", command=open_file_cleanup_window).pack(pady=5)
+ttk.Button(frame3, text="Password Generator", command=open_password_generator_window).pack(pady=5)
+ttk.Button(frame3, text="Task Tracker / Reminder", command=open_task_tracker_window).pack(pady=5)
 
 # Start the scheduler
 start_scheduler()
